@@ -1,0 +1,47 @@
+The recipes on the left side are coded as anchor (<a>) elements
+
+    <a class="preview__link ${
+      this._data.id === id ? 'preview__link--active' : ''
+    }" href="#${this._data.id}">
+
+Anchor elements have the href attribute. In this case, each recipe on the left side has the href attribute, which stores an id of a specific recipe.
+
+If the value in that href attribute is prefixed with the hash symbol (#), the value from that href attribute will be appended to the url when the anchor element is clicked. This part of the url is called the URI fragment, but we often called it a "hash".
+
+Appending a hash to the url fires the 'hashchange' event, and our application listens to that event (in the recipeView)
+
+    addHandlerRender(handler) {
+      ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+    }
+
+Our handler is passed from the controller.js file (in the init() function), and it's the controlRecipes() function
+
+    recipeView.addHandlerRender(controlRecipes);
+
+And, the controlRecipes() function is responsible for loading the recipe on the right side
+
+    const controlRecipes = async function() {
+      try {
+        const id = window.location.hash.slice(1);
+     
+        if (!id) return;
+        recipeView.renderSpinner();
+     
+        // 0) Update results view to mark selected search result
+        resultsView.update(model.getSearchResultsPage());
+     
+        // 1) Updating bookmarks view
+        bookmarksView.update(model.state.bookmarks);
+     
+        // 2) Loading recipe
+        await model.loadRecipe(id);
+     
+        // 3) Rendering recipe
+        recipeView.render(model.state.recipe);
+      } catch (err) {
+        recipeView.renderError();
+        console.error(err);
+      }
+    };
+
+Let me know if you have any questions
